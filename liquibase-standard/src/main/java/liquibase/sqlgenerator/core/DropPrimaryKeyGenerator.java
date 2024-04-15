@@ -21,7 +21,7 @@ public class DropPrimaryKeyGenerator extends AbstractSqlGenerator<DropPrimaryKey
     @Override
     public ValidationErrors validate(DropPrimaryKeyStatement dropPrimaryKeyStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", dropPrimaryKeyStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", dropPrimaryKeyStatement.databaseTableIdentifier.getGetTableName()());
 
         if ((database instanceof FirebirdDatabase) || (database instanceof InformixDatabase) || (database instanceof
             SybaseDatabase)) {
@@ -35,7 +35,7 @@ public class DropPrimaryKeyGenerator extends AbstractSqlGenerator<DropPrimaryKey
     public Sql[] generateSql(DropPrimaryKeyStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         String sql;
         if (database instanceof MSSQLDatabase) {
-            String escapedTableName = database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName());
+            String escapedTableName = database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()());
             if (statement.getConstraintName() == null) {
                 sql =
                         "DECLARE @sql [nvarchar](MAX)\r\n" +
@@ -49,10 +49,10 @@ public class DropPrimaryKeyGenerator extends AbstractSqlGenerator<DropPrimaryKey
             }
         } else if (database instanceof PostgresDatabase) {
 			if (statement.getConstraintName() == null) {
-				String schemaName = (statement.getSchemaName() != null) ? statement.getSchemaName() : database
+				String schemaName = (statement.databaseTableIdentifier.getGetSchemaName()() != null) ? statement.databaseTableIdentifier.getGetSchemaName()() : database
                     .getDefaultSchemaName();
 				schemaName = database.correctObjectName(schemaName, Schema.class);
-				String tableName = database.correctObjectName(statement.getTableName(), Table.class);
+				String tableName = database.correctObjectName(statement.databaseTableIdentifier.getGetTableName()(), Table.class);
 
 				sql = String.format(""
 						+ "DO $$ DECLARE constraint_name varchar;\n"
@@ -66,25 +66,25 @@ public class DropPrimaryKeyGenerator extends AbstractSqlGenerator<DropPrimaryKey
 						, schemaName, tableName
 						, database.escapeObjectName(schemaName, Schema.class), database.escapeObjectName(tableName, Table.class));
 			} else {
-				sql = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP CONSTRAINT " + database.escapeConstraintName(statement.getConstraintName());
+				sql = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP CONSTRAINT " + database.escapeConstraintName(statement.getConstraintName());
 			}
         } else if (database instanceof FirebirdDatabase) {
-            sql = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP CONSTRAINT "+database.escapeConstraintName(statement.getConstraintName());
+            sql = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP CONSTRAINT "+database.escapeConstraintName(statement.getConstraintName());
         } else if (database instanceof OracleDatabase) {
-            sql = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP PRIMARY KEY";
+            sql = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP PRIMARY KEY";
             if ((statement.getDropIndex() == null) || statement.getDropIndex()) {
                 sql += " DROP INDEX";
             } else {
                 sql += " KEEP INDEX";
             }
         } else if (database instanceof InformixDatabase) {
-            sql = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP CONSTRAINT " + database.escapeConstraintName(statement.getConstraintName());
+            sql = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP CONSTRAINT " + database.escapeConstraintName(statement.getConstraintName());
         } else if (database instanceof SybaseDatabase) {
-            String escapedTableName = database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName());
+            String escapedTableName = database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()());
             String escapedConstraintName = database.escapeConstraintName(statement.getConstraintName());
             sql = "ALTER TABLE " + escapedTableName + " DROP CONSTRAINT " + escapedConstraintName;
         } else {
-            sql = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP PRIMARY KEY";
+            sql = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP PRIMARY KEY";
         }
 
         return new Sql[] {
@@ -93,6 +93,6 @@ public class DropPrimaryKeyGenerator extends AbstractSqlGenerator<DropPrimaryKey
     }
 
     protected PrimaryKey getAffectedPrimaryKey(DropPrimaryKeyStatement statement) {
-        return new PrimaryKey().setName(statement.getConstraintName()).setTable((Table) new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName()));
+        return new PrimaryKey().setName(statement.getConstraintName()).setTable((Table) new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()()));
     }
 }

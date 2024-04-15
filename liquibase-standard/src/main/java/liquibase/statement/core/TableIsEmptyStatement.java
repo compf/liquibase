@@ -8,7 +8,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class TableIsEmptyStatement extends AbstractSqlStatement {
 
-    private final String catalogName;
-    private final String schemaName;
-    private final String tableName;
+    private liquibase.statement.core.DatabaseTableIdentifier databaseTableIdentifier = new liquibase.statement.core.DatabaseTableIdentifier(null, null, null);
 }

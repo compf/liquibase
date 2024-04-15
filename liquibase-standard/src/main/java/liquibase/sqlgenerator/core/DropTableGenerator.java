@@ -15,14 +15,14 @@ public class DropTableGenerator extends AbstractSqlGenerator<DropTableStatement>
     @Override
     public ValidationErrors validate(DropTableStatement dropTableStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", dropTableStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", dropTableStatement.databaseTableIdentifier.getGetTableName()());
         return validationErrors;
     }
 
     @Override
     public Sql[] generateSql(DropTableStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("DROP TABLE ").append(database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()));
+        buffer.append("DROP TABLE ").append(database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()));
         if (statement.isCascadeConstraints()) {
             if (database.supportsDropTableCascadeConstraints()) {
                 if (database instanceof OracleDatabase) {
@@ -39,6 +39,6 @@ public class DropTableGenerator extends AbstractSqlGenerator<DropTableStatement>
     }
 
     protected Relation getAffectedTable(DropTableStatement statement) {
-        return new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName());
+        return new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()());
     }
 }

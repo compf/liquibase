@@ -20,7 +20,7 @@ public class UpdateGenerator extends AbstractSqlGenerator<UpdateStatement> {
     @Override
     public ValidationErrors validate(UpdateStatement updateStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", updateStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", updateStatement.databaseTableIdentifier.getGetTableName()());
         validationErrors.checkRequiredField("columns", updateStatement.getNewColumnValues());
         if ((updateStatement.getWhereParameters() != null) && !updateStatement.getWhereParameters().isEmpty() &&
             (updateStatement.getWhereClause() == null)) {
@@ -32,11 +32,11 @@ public class UpdateGenerator extends AbstractSqlGenerator<UpdateStatement> {
     @Override
     public Sql[] generateSql(UpdateStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         StringBuilder sql = new StringBuilder("UPDATE ")
-            .append(database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()))
+            .append(database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()))
             .append(" SET");
         for (String column : statement.getNewColumnValues().keySet()) {
             sql.append(" ")
-                .append(database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), column))
+                .append(database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), column))
                 .append(" = ")
                 .append(convertToString(statement.getNewColumnValues().get(column), database))
                 .append(",");
@@ -56,7 +56,7 @@ public class UpdateGenerator extends AbstractSqlGenerator<UpdateStatement> {
     }
 
     protected Relation getAffectedTable(UpdateStatement statement) {
-        return new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName());
+        return new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()());
     }
 
     private String convertToString(Object newValue, Database database) {

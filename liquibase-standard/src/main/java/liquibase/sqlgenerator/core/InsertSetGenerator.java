@@ -20,7 +20,7 @@ public class InsertSetGenerator extends AbstractSqlGenerator<InsertSetStatement>
     @Override
     public ValidationErrors validate(InsertSetStatement insertStatementSet, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", insertStatementSet.peek().getTableName());
+        validationErrors.checkRequiredField("tableName", insertStatementSet.peek().databaseTableIdentifier.getGetTableName()());
         validationErrors.checkRequiredField("columns", insertStatementSet.peek().getColumnValues());
 
         return validationErrors;
@@ -76,6 +76,6 @@ public class InsertSetGenerator extends AbstractSqlGenerator<InsertSetStatement>
 	}
 
 	protected Relation getAffectedTable(InsertSetStatement statement) {
-        return new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName());
+        return new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()());
     }
 }

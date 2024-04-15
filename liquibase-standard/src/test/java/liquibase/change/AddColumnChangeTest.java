@@ -107,8 +107,8 @@ public class AddColumnChangeTest {
         Assert.assertEquals(1, statements.length);
         Assert.assertTrue(statements[0] instanceof DropColumnStatement);
         DropColumnStatement dropStmt = (DropColumnStatement)statements[0];
-        Assert.assertEquals("catalog1", dropStmt.getCatalogName());
-        Assert.assertEquals("schema1", dropStmt.getSchemaName());
-        Assert.assertEquals("table1", dropStmt.getTableName());
+        Assert.assertEquals("catalog1", dropStmt.databaseTableIdentifier.getGetCatalogName()());
+        Assert.assertEquals("schema1", dropStmt.databaseTableIdentifier.getGetSchemaName()());
+        Assert.assertEquals("table1", dropStmt.databaseTableIdentifier.getGetTableName()());
     }
 }

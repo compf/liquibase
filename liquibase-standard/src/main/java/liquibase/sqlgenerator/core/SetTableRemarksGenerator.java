@@ -23,7 +23,7 @@ public class SetTableRemarksGenerator extends AbstractSqlGenerator<SetTableRemar
 	@Override
     public ValidationErrors validate(SetTableRemarksStatement setTableRemarksStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
 		ValidationErrors validationErrors = new ValidationErrors();
-		validationErrors.checkRequiredField("tableName", setTableRemarksStatement.getTableName());
+		validationErrors.checkRequiredField("tableName", setTableRemarksStatement.databaseTableIdentifier.getGetTableName()());
 		return validationErrors;
 	}
 
@@ -32,15 +32,15 @@ public class SetTableRemarksGenerator extends AbstractSqlGenerator<SetTableRemar
 		String sql;
 		String remarksEscaped = database.escapeStringForDatabase(StringUtil.trimToEmpty(statement.getRemarks()));
 		if (database instanceof MySQLDatabase) {
-			sql = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " COMMENT = '" + remarksEscaped
+			sql = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " COMMENT = '" + remarksEscaped
 					+ "'";
 		} else if (database instanceof MSSQLDatabase) {
-			String schemaName = statement.getSchemaName();
+			String schemaName = statement.databaseTableIdentifier.getGetSchemaName()();
 			if (schemaName == null) {
 				schemaName = database.getDefaultSchemaName() != null ? database.getDefaultSchemaName() : "dbo";
 			}
-			String tableName = statement.getTableName();
-			String qualifiedTableName = String.format("%s.%s", schemaName, statement.getTableName());
+			String tableName = statement.databaseTableIdentifier.getGetTableName()();
+			String qualifiedTableName = String.format("%s.%s", schemaName, statement.databaseTableIdentifier.getGetTableName()());
 
 			sql = "IF EXISTS( " +
 					" SELECT extended_properties.value" +
@@ -67,7 +67,7 @@ public class SetTableRemarksGenerator extends AbstractSqlGenerator<SetTableRemar
 					" , @level1name = N'" + tableName + "'" +
 					" END";
 		} else {
-			sql = "COMMENT ON TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " IS '"
+			sql = "COMMENT ON TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " IS '"
 					+ remarksEscaped + "'";
 		}
 
@@ -75,6 +75,6 @@ public class SetTableRemarksGenerator extends AbstractSqlGenerator<SetTableRemar
 	}
 
     protected Relation getAffectedTable(SetTableRemarksStatement statement) {
-        return new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName());
+        return new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()());
     }
 }

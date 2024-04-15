@@ -119,9 +119,9 @@ public class LoadUpdateDataChange extends LoadDataChange {
 
         for (String thisPkColumn : pkColumns) {
             Object newValue = insertOrUpdateStatement.getColumnValues().get(thisPkColumn);
-            where.append(database.escapeColumnName(insertOrUpdateStatement.getCatalogName(),
-                    insertOrUpdateStatement.getSchemaName(),
-                    insertOrUpdateStatement.getTableName(),
+            where.append(database.escapeColumnName(insertOrUpdateStatement.databaseTableIdentifier.getGetCatalogName()(),
+                    insertOrUpdateStatement.databaseTableIdentifier.getGetSchemaName()(),
+                    insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()(),
                     thisPkColumn)).append(((newValue == null) || StringUtil.equalsWordNull(newValue.toString())) ? " is " : " = ");
 
             if ((newValue == null) || StringUtil.equalsWordNull(newValue.toString())) {

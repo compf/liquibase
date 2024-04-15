@@ -16,7 +16,7 @@ public class DeleteGenerator extends AbstractSqlGenerator<DeleteStatement> {
     @Override
     public ValidationErrors validate(DeleteStatement deleteStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", deleteStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", deleteStatement.databaseTableIdentifier.getGetTableName()());
         if ((deleteStatement.getWhereParameters() != null) && !deleteStatement.getWhereParameters().isEmpty() &&
             (deleteStatement.getWhere() == null)) {
             validationErrors.addError("whereParams set but no whereClause");
@@ -27,7 +27,7 @@ public class DeleteGenerator extends AbstractSqlGenerator<DeleteStatement> {
     @Override
     public Sql[] generateSql(DeleteStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         StringBuilder sql = new StringBuilder("DELETE FROM ")
-            .append(database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()));
+            .append(database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()));
 
         if (statement.getWhere() != null) {
             sql.append(" WHERE ").append(replacePredicatePlaceholders(database, statement.getWhere(), statement.getWhereColumnNames(), statement.getWhereParameters()));
@@ -37,6 +37,6 @@ public class DeleteGenerator extends AbstractSqlGenerator<DeleteStatement> {
     }
 
     protected Relation getAffectedTable(DeleteStatement statement) {
-        return new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName());
+        return new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()());
     }
 }

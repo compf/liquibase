@@ -23,14 +23,14 @@ public class ReindexGeneratorSQLite extends AbstractSqlGenerator<ReindexStatemen
     @Override
     public ValidationErrors validate(ReindexStatement reindexStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", reindexStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", reindexStatement.databaseTableIdentifier.getGetTableName()());
         return validationErrors;
     }
 
     @Override
     public Sql[] generateSql(ReindexStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         return new Sql[] {
-                new UnparsedSql("REINDEX "+database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()), new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName()))
+                new UnparsedSql("REINDEX "+database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()), new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()()))
         };
     }
 }

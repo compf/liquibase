@@ -22,12 +22,12 @@ public class TableRowCountGenerator extends AbstractSqlGenerator<TableRowCountSt
     @Override
     public ValidationErrors validate(TableRowCountStatement dropColumnStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", dropColumnStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", dropColumnStatement.databaseTableIdentifier.getGetTableName()());
         return validationErrors;
     }
 
     protected String generateCountSql(TableRowCountStatement statement, Database database) {
-        return "SELECT COUNT(*) FROM "+database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName());
+        return "SELECT COUNT(*) FROM "+database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()());
     }
 
     @Override

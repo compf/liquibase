@@ -9,12 +9,6 @@ import lombok.Setter;
 public class AddUniqueConstraintStatement extends AbstractSqlStatement {
 
     @Getter
-    private final String catalogName;
-    @Getter
-    private final String schemaName;
-    @Getter
-    private final String tableName;
-    @Getter
     private final ColumnConfig[] columns;
     @Getter
     private final String constraintName;
@@ -41,11 +35,12 @@ public class AddUniqueConstraintStatement extends AbstractSqlStatement {
     @Getter
     @Setter
     private String forIndexCatalogName;
+    private liquibase.statement.core.DatabaseTableIdentifier databaseTableIdentifier = new liquibase.statement.core.DatabaseTableIdentifier(null, null, null);
 
     public AddUniqueConstraintStatement(String catalogName, String schemaName, String tableName, ColumnConfig[] columns, String constraintName) {
-        this.catalogName = catalogName;
-        this.schemaName = schemaName;
-        this.tableName = tableName;
+        this.databaseTableIdentifier.setCatalogName(catalogName);
+        this.databaseTableIdentifier.setSchemaName(schemaName);
+        this.databaseTableIdentifier.setTableName(tableName);
         this.columns = columns;
         this.constraintName = constraintName;
     }

@@ -23,7 +23,7 @@ public class DropColumnGenerator extends AbstractSqlGenerator<DropColumnStatemen
 
             for (DropColumnStatement drop : dropColumnStatement.getColumns()) {
                 validationErrors.addAll(validateSingleColumn(drop));
-                if ((drop.getTableName() != null) && !drop.getTableName().equals(firstColumn.getTableName())) {
+                if ((drop.databaseTableIdentifier.getGetTableName()() != null) && !drop.databaseTableIdentifier.getGetTableName()().equals(firstColumn.databaseTableIdentifier.getGetTableName()())) {
                     validationErrors.addError("All columns must be targeted at the same table");
                 }
                 if (drop.isMultiple()) {
@@ -38,7 +38,7 @@ public class DropColumnGenerator extends AbstractSqlGenerator<DropColumnStatemen
 
     private ValidationErrors validateSingleColumn(DropColumnStatement dropColumnStatement) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", dropColumnStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", dropColumnStatement.databaseTableIdentifier.getGetTableName()());
         validationErrors.checkRequiredField("columnName", dropColumnStatement.getColumnName());
         return validationErrors;
     }
@@ -55,9 +55,9 @@ public class DropColumnGenerator extends AbstractSqlGenerator<DropColumnStatemen
     private Sql[] generateMultipleColumnSql(List<DropColumnStatement> columns, Database database) {
         List<Sql> result = new ArrayList<>();
         if (database instanceof MySQLDatabase) {
-            final StringBuilder alterTable = new StringBuilder("ALTER TABLE " + database.escapeTableName(columns.get(0).getCatalogName(), columns.get(0).getSchemaName(), columns.get(0).getTableName()));
+            final StringBuilder alterTable = new StringBuilder("ALTER TABLE " + database.escapeTableName(columns.get(0).databaseTableIdentifier.getGetCatalogName()(), columns.get(0).databaseTableIdentifier.getGetSchemaName()(), columns.get(0).databaseTableIdentifier.getGetTableName()()));
             for (int i = 0; i < columns.size(); i++) {
-                alterTable.append(" DROP ").append(database.escapeColumnName(columns.get(i).getCatalogName(), columns.get(i).getSchemaName(), columns.get(i).getTableName(), columns.get(i).getColumnName()));
+                alterTable.append(" DROP ").append(database.escapeColumnName(columns.get(i).databaseTableIdentifier.getGetCatalogName()(), columns.get(i).databaseTableIdentifier.getGetSchemaName()(), columns.get(i).databaseTableIdentifier.getGetTableName()(), columns.get(i).getColumnName()));
                 if (i < (columns.size() - 1)) {
                     alterTable.append(",");
                 }
@@ -81,20 +81,20 @@ public class DropColumnGenerator extends AbstractSqlGenerator<DropColumnStatemen
 
     private Sql[] generateSingleColumnSql(DropColumnStatement statement, Database database) {
         if (database instanceof DB2Database) {
-            return new Sql[] {new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP COLUMN " + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName()), getAffectedColumn(statement))};
+            return new Sql[] {new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP COLUMN " + database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName()), getAffectedColumn(statement))};
         } else if (database instanceof Db2zDatabase) {
-            return new Sql[]{new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP COLUMN " + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName()) + " RESTRICT", getAffectedColumn(statement))};
+            return new Sql[]{new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP COLUMN " + database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName()) + " RESTRICT", getAffectedColumn(statement))};
         } else if ((database instanceof SybaseDatabase) || (database instanceof SybaseASADatabase) || (database
             instanceof FirebirdDatabase) || (database instanceof InformixDatabase)) {
-            return new Sql[] {new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP " + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName()), getAffectedColumn(statement))};
+            return new Sql[] {new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP " + database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName()), getAffectedColumn(statement))};
         } else if (database instanceof MSSQLDatabase) {
             return new Sql[] {
                     generateDropDV(statement, database),
-                    new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP COLUMN " +
-                            database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName()), getAffectedColumn(statement))
+                    new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP COLUMN " +
+                            database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName()), getAffectedColumn(statement))
             };
         }
-        return new Sql[] {new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP COLUMN " + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName()), getAffectedColumn(statement))};
+        return new Sql[] {new UnparsedSql("ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP COLUMN " + database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName()), getAffectedColumn(statement))};
     }
 
     private Column[] getAffectedColumns(List<DropColumnStatement> columns) {
@@ -106,11 +106,11 @@ public class DropColumnGenerator extends AbstractSqlGenerator<DropColumnStatemen
     }
 
     protected Column getAffectedColumn(DropColumnStatement statement) {
-        return new Column().setName(statement.getColumnName()).setRelation(new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName()));
+        return new Column().setName(statement.getColumnName()).setRelation(new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()()));
     }
 
     private UnparsedSql generateDropDV(DropColumnStatement statement, Database database) {
-        return new UnparsedSql((String) DropDefaultValueGenerator.DROP_DF_MSSQL.apply(database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()),
-                database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName())));
+        return new UnparsedSql((String) DropDefaultValueGenerator.DROP_DF_MSSQL.apply(database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()),
+                database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName())));
     }
 }

@@ -26,7 +26,7 @@ public class DropUniqueConstraintGenerator extends AbstractSqlGenerator<DropUniq
     @Override
     public ValidationErrors validate(DropUniqueConstraintStatement dropUniqueConstraintStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", dropUniqueConstraintStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", dropUniqueConstraintStatement.databaseTableIdentifier.getGetTableName()());
         validationErrors.checkRequiredField("constraintName", dropUniqueConstraintStatement.getConstraintName());
         return validationErrors;
     }
@@ -35,19 +35,19 @@ public class DropUniqueConstraintGenerator extends AbstractSqlGenerator<DropUniq
     public Sql[] generateSql(DropUniqueConstraintStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         String sql;
         if (database instanceof MySQLDatabase) {
-            sql = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP KEY " + database.escapeConstraintName(statement.getConstraintName());
+            sql = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP KEY " + database.escapeConstraintName(statement.getConstraintName());
         } else if (database instanceof OracleDatabase) {
-            sql = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP CONSTRAINT " + database.escapeConstraintName(statement.getConstraintName()) + " DROP INDEX";
+            sql = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP CONSTRAINT " + database.escapeConstraintName(statement.getConstraintName()) + " DROP INDEX";
         } else if (database instanceof SybaseASADatabase) {
             // Syntax is pretty regular, according to:
             // https://help.sap.com/viewer/40c01c3500744c85a02db71276495de5/17.0/en-US/8169d7966ce2101497b5ac611f7413ce.html
             sql = "ALTER TABLE "
-                    + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName())
+                    + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()())
                     + " DROP CONSTRAINT " + database.escapeConstraintName(statement.getConstraintName());
         } else if (database instanceof CockroachDatabase) {
             sql = "DROP INDEX " + database.escapeConstraintName(statement.getConstraintName()) + " CASCADE";
         } else {
-            sql = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " DROP CONSTRAINT " + database.escapeConstraintName(statement.getConstraintName());
+            sql = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " DROP CONSTRAINT " + database.escapeConstraintName(statement.getConstraintName());
         }
 
         return new Sql[] {
@@ -56,7 +56,7 @@ public class DropUniqueConstraintGenerator extends AbstractSqlGenerator<DropUniq
     }
 
     protected UniqueConstraint getAffectedUniqueConstraint(DropUniqueConstraintStatement statement) {
-        UniqueConstraint constraint = new UniqueConstraint().setName(statement.getConstraintName()).setRelation(new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName()));
+        UniqueConstraint constraint = new UniqueConstraint().setName(statement.getConstraintName()).setRelation(new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()()));
         if (statement.getUniqueColumns() != null) {
             int i = 0;
             for (ColumnConfig column : statement.getUniqueColumns()) {

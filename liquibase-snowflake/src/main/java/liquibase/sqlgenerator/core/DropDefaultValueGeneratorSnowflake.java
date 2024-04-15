@@ -23,10 +23,10 @@ public class DropDefaultValueGeneratorSnowflake extends DropDefaultValueGenerato
         return new Sql[]{
                 new UnparsedSql(
                         "ALTER TABLE "
-                                + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName())
+                                + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()())
                                 + " ALTER COLUMN "
-                                + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(),
-                                statement.getTableName(), statement.getColumnName())
+                                + database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(),
+                                statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName())
                                 + " DROP DEFAULT")};
     }
 

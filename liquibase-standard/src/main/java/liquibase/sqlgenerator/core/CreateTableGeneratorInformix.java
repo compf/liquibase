@@ -55,7 +55,7 @@ public class CreateTableGeneratorInformix extends CreateTableGenerator {
             buffer.append("IF NOT EXISTS ");
         }
 
-        buffer.append(database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()))
+        buffer.append(database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()))
                 .append(" ")
                 .append("(");
 
@@ -76,7 +76,7 @@ public class CreateTableGeneratorInformix extends CreateTableGenerator {
         while (columnIterator.hasNext()) {
             String column = columnIterator.next();
 
-            buffer.append(database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), column));
+            buffer.append(database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), column));
             buffer.append(" ").append(statement.getColumnTypes().get(column).toDatabaseDataType(database).toSql());
 
             AutoIncrementConstraint autoIncrementConstraint = null;
@@ -111,7 +111,7 @@ public class CreateTableGeneratorInformix extends CreateTableGenerator {
                         buffer.append(" ").append(autoIncrementClause);
                     }
                 } else {
-                    Scope.getCurrentScope().getLog(getClass()).warning(database.getShortName() + " does not support autoincrement columns as requested for " + (database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName())));
+                    Scope.getCurrentScope().getLog(getClass()).warning(database.getShortName() + " does not support autoincrement columns as requested for " + (database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()())));
                 }
             }
 
@@ -155,7 +155,7 @@ public class CreateTableGeneratorInformix extends CreateTableGenerator {
                 referencesString = database.getDefaultSchemaName() + "." + referencesString;
             }
             buffer.append(" FOREIGN KEY (")
-                    .append(database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), fkConstraint.getColumn()))
+                    .append(database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), fkConstraint.getColumn()))
                     .append(") REFERENCES ")
                     .append(referencesString);
 
@@ -202,7 +202,7 @@ public class CreateTableGeneratorInformix extends CreateTableGenerator {
             sql += " IN " + statement.getTablespace();
         }
 
-        return new Sql[]{new UnparsedSql(sql, new Table().setName(statement.getTableName()).setSchema(new Schema(statement.getCatalogName(), statement.getSchemaName())))};
+        return new Sql[]{new UnparsedSql(sql, new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(new Schema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()())))};
     }
 
     private boolean constraintNameAfterUnique() {

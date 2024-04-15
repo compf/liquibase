@@ -30,9 +30,9 @@ public class SetColumnRemarksGenerator extends AbstractSqlGenerator<SetColumnRem
     @Override
     public ValidationErrors validate(SetColumnRemarksStatement setColumnRemarksStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", setColumnRemarksStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", setColumnRemarksStatement.databaseTableIdentifier.getGetTableName()());
         validationErrors.checkRequiredField("columnName", setColumnRemarksStatement.getColumnName());
-        validationErrors.checkDisallowedField("catalogName", setColumnRemarksStatement.getCatalogName(), database, MSSQLDatabase.class);
+        validationErrors.checkDisallowedField("catalogName", setColumnRemarksStatement.databaseTableIdentifier.getGetCatalogName()(), database, MSSQLDatabase.class);
         if (database instanceof MySQLDatabase) {
             validationErrors.checkRequiredField("columnDataType", StringUtil.trimToNull(setColumnRemarksStatement.getColumnDataType()));
         }
@@ -57,17 +57,17 @@ public class SetColumnRemarksGenerator extends AbstractSqlGenerator<SetColumnRem
         if (database instanceof MySQLDatabase) {
             // generate mysql sql  ALTER TABLE cat.user MODIFY COLUMN id int DEFAULT 1001  COMMENT 'A String'
             return new Sql[]{new UnparsedSql("ALTER TABLE " + database.escapeTableName(
-                    statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + " MODIFY COLUMN "
-                    + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName()) + " "
+                    statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + " MODIFY COLUMN "
+                    + database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName()) + " "
                     + DataTypeFactory.getInstance().fromDescription(statement.getColumnDataType(), database).toDatabaseDataType(database)
                     + " COMMENT '" + remarksEscaped + "'", getAffectedColumn(statement))};
         } else if (database instanceof MSSQLDatabase) {
-            String schemaName = statement.getSchemaName();
+            String schemaName = statement.databaseTableIdentifier.getGetSchemaName()();
             if (schemaName == null) {
                 schemaName = database.getDefaultSchemaName() != null ? database.getDefaultSchemaName() : "dbo";
             }
-            String tableName = statement.getTableName();
-            String qualifiedTableName = String.format("%s.%s", schemaName, statement.getTableName());
+            String tableName = statement.databaseTableIdentifier.getGetTableName()();
+            String qualifiedTableName = String.format("%s.%s", schemaName, statement.databaseTableIdentifier.getGetTableName()());
             String columnName = statement.getColumnName();
             String targetObject = "TABLE";
             if (statement.getColumnParentType() != null && statement.getColumnParentType() == ColumnParentType.VIEW) {
@@ -108,13 +108,13 @@ public class SetColumnRemarksGenerator extends AbstractSqlGenerator<SetColumnRem
                     " END")};
             return generatedSql;
         } else {
-            return new Sql[]{new UnparsedSql("COMMENT ON COLUMN " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName())
-                    + "." + database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName()) + " IS '"
+            return new Sql[]{new UnparsedSql("COMMENT ON COLUMN " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()())
+                    + "." + database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName()) + " IS '"
                     + remarksEscaped + "'", getAffectedColumn(statement))};
         }
     }
 
     protected Column getAffectedColumn(SetColumnRemarksStatement statement) {
-        return new Column().setName(statement.getColumnName()).setRelation(new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName()));
+        return new Column().setName(statement.getColumnName()).setRelation(new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()()));
     }
 }

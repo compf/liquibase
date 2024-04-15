@@ -26,7 +26,7 @@ public class ReorganizeTableGeneratorDB2 extends AbstractSqlGenerator<Reorganize
     @Override
     public ValidationErrors validate(ReorganizeTableStatement reorganizeTableStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", reorganizeTableStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", reorganizeTableStatement.databaseTableIdentifier.getGetTableName()());
         return validationErrors;
     }
 
@@ -39,7 +39,7 @@ public class ReorganizeTableGeneratorDB2 extends AbstractSqlGenerator<Reorganize
         try {
             if (database.getDatabaseMajorVersion() >= 9) {
                 return new Sql[]{
-                        new UnparsedSql("CALL SYSPROC.ADMIN_CMD ('REORG TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()) + "')",
+                        new UnparsedSql("CALL SYSPROC.ADMIN_CMD ('REORG TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()) + "')",
                                 getAffectedTable(statement))
                 };
             } else {
@@ -51,6 +51,6 @@ public class ReorganizeTableGeneratorDB2 extends AbstractSqlGenerator<Reorganize
     }
 
     protected Relation getAffectedTable(ReorganizeTableStatement statement) {
-        return new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName());
+        return new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()());
     }
 }

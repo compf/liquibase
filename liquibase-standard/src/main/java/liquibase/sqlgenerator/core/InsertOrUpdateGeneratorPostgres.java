@@ -40,8 +40,8 @@ public class InsertOrUpdateGeneratorPostgres extends InsertOrUpdateGenerator {
 		} catch (LiquibaseException e) {
 			// The perform keyword can be used here as an alternative as it does not return a value.
 			generatedSql.append("perform * from "
-					+ database.escapeTableName(insertOrUpdateStatement.getCatalogName(), insertOrUpdateStatement.getSchemaName(),
-							insertOrUpdateStatement.getTableName()) + " WHERE " + getWhereClause(insertOrUpdateStatement, database) + ";\n");
+					+ database.escapeTableName(insertOrUpdateStatement.databaseTableIdentifier.getGetCatalogName()(), insertOrUpdateStatement.databaseTableIdentifier.getGetSchemaName()(),
+							insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()()) + " WHERE " + getWhereClause(insertOrUpdateStatement, database) + ";\n");
 		}
 
 		// if we don't want to only update, then add the INSERT statement

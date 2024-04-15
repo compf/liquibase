@@ -22,7 +22,7 @@ public class InsertOrUpdateGeneratorHsql extends InsertOrUpdateGenerator {
 	protected String getRecordCheck(InsertOrUpdateStatement insertOrUpdateStatement, Database database,
 									String whereClause) {
 		return "MERGE INTO " +
-				insertOrUpdateStatement.getTableName() +
+				insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()() +
 				" USING (VALUES (1)) ON " +
 				whereClause +
 				" WHEN NOT MATCHED THEN ";

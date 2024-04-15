@@ -22,7 +22,7 @@ public class InsertOrUpdateGeneratorOracle extends InsertOrUpdateGenerator {
                 "BEGIN\n" +
                 "\tSELECT COUNT(*) INTO v_reccount FROM %s WHERE %s;\n" +
                 "\tIF v_reccount = 0 THEN\n",
-            database.escapeTableName(insertOrUpdateStatement.getCatalogName(), insertOrUpdateStatement.getSchemaName(), insertOrUpdateStatement.getTableName()),
+            database.escapeTableName(insertOrUpdateStatement.databaseTableIdentifier.getGetCatalogName()(), insertOrUpdateStatement.databaseTableIdentifier.getGetSchemaName()(), insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()()),
             whereClause
         );
     }

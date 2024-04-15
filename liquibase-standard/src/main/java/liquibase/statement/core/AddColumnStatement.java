@@ -9,9 +9,6 @@ import java.util.*;
 @Getter
 public class AddColumnStatement extends AbstractSqlStatement {
 
-    private String catalogName;
-    private String schemaName;
-    private String tableName;
     private String columnName;
     private String columnType;
     private Object defaultValue;
@@ -29,11 +26,12 @@ public class AddColumnStatement extends AbstractSqlStatement {
     private final Set<ColumnConstraint> constraints = new HashSet<>();
 
     private final List<AddColumnStatement> columns = new ArrayList<>();
+    private liquibase.statement.core.DatabaseTableIdentifier databaseTableIdentifier = new liquibase.statement.core.DatabaseTableIdentifier(null, null, null);
 
     public AddColumnStatement(String catalogName, String schemaName, String tableName, String columnName, String columnType, Object defaultValue, ColumnConstraint... constraints) {
-        this.catalogName = catalogName;
-        this.schemaName = schemaName;
-        this.tableName = tableName;
+        this.databaseTableIdentifier.setCatalogName(catalogName);
+        this.databaseTableIdentifier.setSchemaName(schemaName);
+        this.databaseTableIdentifier.setTableName(tableName);
         this.columnName = columnName;
         this.columnType = columnType;
         this.defaultValue = defaultValue;

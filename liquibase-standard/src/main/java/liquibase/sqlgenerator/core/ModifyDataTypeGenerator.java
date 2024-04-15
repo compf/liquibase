@@ -37,7 +37,7 @@ public class ModifyDataTypeGenerator extends AbstractSqlGenerator<ModifyDataType
     @Override
     public ValidationErrors validate(ModifyDataTypeStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", statement.getTableName());
+        validationErrors.checkRequiredField("tableName", statement.databaseTableIdentifier.getGetTableName()());
         validationErrors.checkRequiredField("columnName", statement.getColumnName());
         validationErrors.checkRequiredField("newDataType", statement.getNewDataType());
 
@@ -46,13 +46,13 @@ public class ModifyDataTypeGenerator extends AbstractSqlGenerator<ModifyDataType
 
     @Override
     public Sql[] generateSql(ModifyDataTypeStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
-        String alterTable = "ALTER TABLE " + database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName());
+        String alterTable = "ALTER TABLE " + database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()());
 
         // add "MODIFY"
         alterTable += " " + getModifyString(database) + " ";
 
         // add column name
-        String columnName = database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), statement.getColumnName());
+        String columnName = database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), statement.getColumnName());
         alterTable += columnName;
 
         alterTable += getPreDataTypeString(database); // adds a space if nothing else
@@ -70,7 +70,7 @@ public class ModifyDataTypeGenerator extends AbstractSqlGenerator<ModifyDataType
     }
 
     protected Relation getAffectedTable(ModifyDataTypeStatement statement) {
-        return new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName());
+        return new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()());
     }
 
     /**

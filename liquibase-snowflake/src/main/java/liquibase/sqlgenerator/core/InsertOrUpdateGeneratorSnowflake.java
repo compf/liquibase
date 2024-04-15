@@ -52,7 +52,7 @@ public class InsertOrUpdateGeneratorSnowflake extends InsertOrUpdateGenerator {
 
     @Override
     protected String getRecordCheck(InsertOrUpdateStatement insertOrUpdateStatement, Database database, String whereClause) {
-        return "MERGE INTO " + insertOrUpdateStatement.getTableName() + " USING (VALUES (1)) ON " + whereClause + " WHEN NOT MATCHED THEN ";
+        return "MERGE INTO " + insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()() + " USING (VALUES (1)) ON " + whereClause + " WHEN NOT MATCHED THEN ";
     }
 
     @Override

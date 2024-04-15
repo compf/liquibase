@@ -19,7 +19,7 @@ public class InsertOrUpdateGeneratorMSSQL extends InsertOrUpdateGenerator {
             "SELECT @reccount = count(*) FROM %s" +
             " WHERE %s\n" +
             "IF @reccount = 0\n",
-            database.escapeTableName(insertOrUpdateStatement.getCatalogName(), insertOrUpdateStatement.getSchemaName(), insertOrUpdateStatement.getTableName()),
+            database.escapeTableName(insertOrUpdateStatement.databaseTableIdentifier.getGetCatalogName()(), insertOrUpdateStatement.databaseTableIdentifier.getGetSchemaName()(), insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()()),
             whereClause
         );
     }

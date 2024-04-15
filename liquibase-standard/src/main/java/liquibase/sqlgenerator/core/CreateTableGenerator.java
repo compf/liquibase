@@ -36,7 +36,7 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
     @Override
     public ValidationErrors validate(CreateTableStatement createTableStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", createTableStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", createTableStatement.databaseTableIdentifier.getGetTableName()());
         validationErrors.checkRequiredField("columns", createTableStatement.getColumns());
 
         if (createTableStatement.getAutoIncrementConstraints() != null) {
@@ -86,9 +86,9 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
             }
 
             if (columnType == null) {
-                buffer.append(database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), column, false));
+                buffer.append(database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), column, false));
             } else {
-                buffer.append(database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), column, !statement.isComputed(column)));
+                buffer.append(database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), column, !statement.isComputed(column)));
                 buffer.append(" ").append(columnType);
             }
 
@@ -116,7 +116,7 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
                     isAutoIncrementColumn) {
                 String pkName = StringUtil.trimToNull(statement.getPrimaryKeyConstraint().getConstraintName());
                 if (pkName == null) {
-                    pkName = database.generatePrimaryKeyName(statement.getTableName());
+                    pkName = database.generatePrimaryKeyName(statement.databaseTableIdentifier.getGetTableName()());
                 }
                 if (pkName != null) {
                     buffer.append(" CONSTRAINT ");
@@ -131,7 +131,7 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
                 if (database instanceof MSSQLDatabase) {
                     String constraintName = statement.getDefaultValueConstraintName(column);
                     if (constraintName == null) {
-                        constraintName = ((MSSQLDatabase) database).generateDefaultConstraintName(statement.getTableName(), column);
+                        constraintName = ((MSSQLDatabase) database).generateDefaultConstraintName(statement.databaseTableIdentifier.getGetTableName()(), column);
                     }
                     buffer.append(" CONSTRAINT ").append(database.escapeObjectName(constraintName, ForeignKey.class));
                 }
@@ -187,15 +187,15 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
                                 // ignore
                             }
                             if (majorVersion < 10) {
-                                String sequenceName = statement.getTableName() + "_" + column + "_seq";
-                                additionalSql.add(new UnparsedSql("alter sequence " + database.escapeSequenceName(statement.getCatalogName(), statement.getSchemaName(), sequenceName) + " start with " + autoIncrementConstraint.getStartWith(), new Sequence().setName(sequenceName).setSchema(statement.getCatalogName(), statement.getSchemaName())));
+                                String sequenceName = statement.databaseTableIdentifier.getGetTableName()() + "_" + column + "_seq";
+                                additionalSql.add(new UnparsedSql("alter sequence " + database.escapeSequenceName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), sequenceName) + " start with " + autoIncrementConstraint.getStartWith(), new Sequence().setName(sequenceName).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()())));
                             }
                         } else if (database instanceof MySQLDatabase) {
                             mysqlTableOptionStartWith = autoIncrementConstraint.getStartWith();
                         }
                     }
                 } else {
-                    Scope.getCurrentScope().getLog(getClass()).warning(database.getShortName() + " does not support autoincrement columns as requested for " + (database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName())));
+                    Scope.getCurrentScope().getLog(getClass()).warning(database.getShortName() + " does not support autoincrement columns as requested for " + (database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()())));
                 }
             }
 
@@ -252,7 +252,7 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
                         // TODO ORA-00972: identifier is too long
                         // If tableName lenght is more then 28 symbols
                         // then generated pkName will be incorrect
-                        pkName = database.generatePrimaryKeyName(statement.getTableName());
+                        pkName = database.generatePrimaryKeyName(statement.databaseTableIdentifier.getGetTableName()());
                     }
                     if (pkName != null) {
                         buffer.append(" CONSTRAINT ");
@@ -291,7 +291,7 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
             String referencesString = fkConstraint.getReferences();
 
             buffer.append(" FOREIGN KEY (")
-                    .append(database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), fkConstraint.getColumn()))
+                    .append(database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), fkConstraint.getColumn()))
                     .append(") REFERENCES ");
             if (referencesString != null) {
                 if (!referencesString.contains(".") && (database.getDefaultSchemaName() != null) && database
@@ -411,9 +411,9 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
         // In Postgresql, temp tables get their own schema and each session (connection) gets
         //its own temp schema. So - don't qualify them by schema.
         if (!(database instanceof PostgresDatabase) || StringUtil.isEmpty(statement.getTableType()) || !statement.getTableType().trim().toLowerCase().contains("temp")) {
-            return database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName());
+            return database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()());
         } else {
-            return database.escapeObjectName(statement.getTableName(), Table.class);
+            return database.escapeObjectName(statement.databaseTableIdentifier.getGetTableName()(), Table.class);
         }
     }
 
@@ -450,7 +450,7 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
     }
 
     protected Relation getAffectedTable(CreateTableStatement statement) {
-        return new Table().setName(statement.getTableName()).setSchema(new Schema(statement.getCatalogName(), statement.getSchemaName()));
+        return new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(new Schema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()()));
     }
 
 }

@@ -27,7 +27,7 @@ public class InsertOrUpdateGeneratorInformix extends InsertOrUpdateGenerator {
   protected String getRecordCheck(InsertOrUpdateStatement insertOrUpdateStatement, Database database, String whereClause) {
     StringBuilder sql = new StringBuilder();
     String[] pkFields = insertOrUpdateStatement.getPrimaryKey().split(",");
-    String tableReference = database.escapeTableName(insertOrUpdateStatement.getCatalogName(), insertOrUpdateStatement.getSchemaName(), insertOrUpdateStatement.getTableName());
+    String tableReference = database.escapeTableName(insertOrUpdateStatement.databaseTableIdentifier.getGetCatalogName()(), insertOrUpdateStatement.databaseTableIdentifier.getGetSchemaName()(), insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()());
 
     sql.append("MERGE INTO ").append(tableReference).append(" AS ").append(DEST_ALIAS).append("\n");
     sql.append("USING (\n");

@@ -33,7 +33,7 @@ public abstract class InsertOrUpdateGenerator extends AbstractSqlGenerator<Inser
     @Override
     public ValidationErrors validate(InsertOrUpdateStatement statement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", statement.getTableName());
+        validationErrors.checkRequiredField("tableName", statement.databaseTableIdentifier.getGetTableName()());
         validationErrors.checkRequiredField("columns", statement.getColumnValues());
         validationErrors.checkRequiredField("primaryKey", statement.getPrimaryKey());
 
@@ -47,9 +47,9 @@ public abstract class InsertOrUpdateGenerator extends AbstractSqlGenerator<Inser
 
         for (String thisPkColumn : pkColumns) {
             Object newValue = insertOrUpdateStatement.getColumnValues().get(thisPkColumn);
-            where.append(database.escapeColumnName(insertOrUpdateStatement.getCatalogName(),
-                    insertOrUpdateStatement.getSchemaName(),
-                    insertOrUpdateStatement.getTableName(),
+            where.append(database.escapeColumnName(insertOrUpdateStatement.databaseTableIdentifier.getGetCatalogName()(),
+                    insertOrUpdateStatement.databaseTableIdentifier.getGetSchemaName()(),
+                    insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()(),
                     thisPkColumn)).append(((newValue == null) || "NULL".equalsIgnoreCase(newValue.toString())) ?
                     " is " : " = ");
 
@@ -97,9 +97,9 @@ public abstract class InsertOrUpdateGenerator extends AbstractSqlGenerator<Inser
 
         UpdateGenerator update = new UpdateGenerator();
         UpdateStatement updateStatement = new UpdateStatement(
-                insertOrUpdateStatement.getCatalogName(),
-                insertOrUpdateStatement.getSchemaName(),
-                insertOrUpdateStatement.getTableName());
+                insertOrUpdateStatement.databaseTableIdentifier.getGetCatalogName()(),
+                insertOrUpdateStatement.databaseTableIdentifier.getGetSchemaName()(),
+                insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()());
         if (!((database instanceof OracleDatabase) && (insertOrUpdateStatement.getOnlyUpdate() != null) &&
                 insertOrUpdateStatement.getOnlyUpdate())) {
             whereClause += ";\n";
@@ -167,6 +167,6 @@ public abstract class InsertOrUpdateGenerator extends AbstractSqlGenerator<Inser
     }
 
     protected Table getAffectedTable(InsertOrUpdateStatement insertOrUpdateStatement) {
-        return (Table) new Table().setName(insertOrUpdateStatement.getTableName()).setSchema(insertOrUpdateStatement.getCatalogName(), insertOrUpdateStatement.getSchemaName());
+        return (Table) new Table().setName(insertOrUpdateStatement.databaseTableIdentifier.getGetTableName()()).setSchema(insertOrUpdateStatement.databaseTableIdentifier.getGetCatalogName()(), insertOrUpdateStatement.databaseTableIdentifier.getGetSchemaName()());
     }
 }

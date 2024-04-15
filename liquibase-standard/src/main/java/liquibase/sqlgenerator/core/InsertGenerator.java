@@ -19,7 +19,7 @@ public class InsertGenerator extends AbstractSqlGenerator<InsertStatement> {
     @Override
     public ValidationErrors validate(InsertStatement insertStatement, Database database, SqlGeneratorChain sqlGeneratorChain) {
         ValidationErrors validationErrors = new ValidationErrors();
-        validationErrors.checkRequiredField("tableName", insertStatement.getTableName());
+        validationErrors.checkRequiredField("tableName", insertStatement.databaseTableIdentifier.getGetTableName()());
         validationErrors.checkRequiredField("columns", insertStatement.getColumnValues());
 
         return validationErrors;
@@ -48,10 +48,10 @@ public class InsertGenerator extends AbstractSqlGenerator<InsertStatement> {
     
     public void generateHeader(StringBuilder sql,InsertStatement statement, Database database) {
         sql.append("INSERT INTO ")
-            .append(database.escapeTableName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName()))
+            .append(database.escapeTableName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()()))
             .append(" (");
         for (String column : statement.getColumnValues().keySet()) {
-            sql.append(database.escapeColumnName(statement.getCatalogName(), statement.getSchemaName(), statement.getTableName(), column)).append(", ");
+            sql.append(database.escapeColumnName(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()(), statement.databaseTableIdentifier.getGetTableName()(), column)).append(", ");
         }
         sql.deleteCharAt(sql.lastIndexOf(" "));
         int lastComma = sql.lastIndexOf(",");
@@ -99,6 +99,6 @@ public class InsertGenerator extends AbstractSqlGenerator<InsertStatement> {
 
 
     protected Relation getAffectedTable(InsertStatement statement) {
-        return new Table().setName(statement.getTableName()).setSchema(statement.getCatalogName(), statement.getSchemaName());
+        return new Table().setName(statement.databaseTableIdentifier.getGetTableName()()).setSchema(statement.databaseTableIdentifier.getGetCatalogName()(), statement.databaseTableIdentifier.getGetSchemaName()());
     }
 }
